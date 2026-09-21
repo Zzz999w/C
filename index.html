@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>词语斩 · 注释/侧重分开测</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:linear-gradient(165deg,#eef6ff 0%,#f8fcff 45%,#e9faf5 100%);
+    min-height:100vh;color:#1f2937;
+  }
+  .app{max-width:520px;margin:0 auto;padding:18px 16px 40px;min-height:100vh;display:flex;flex-direction:column}
+
+  /* 顶部 */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .brand{font-size:17px;font-weight:700;color:#0f766e;letter-spacing:.5px}
+  .score{display:flex;gap:12px;font-size:14px;font-weight:600}
+  .score .ok{color:#10b981}
+  .score .no{color:#ef4444}
+  .progress{height:7px;border-radius:99px;background:#e2ecf5;overflow:hidden;margin-bottom:8px}
+  .bar{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#38bdf8,#2dd4bf);transition:width .35s ease}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:#7b93aa;margin-bottom:16px}
+  .meta .tip{font-weight:600}
+
+  /* 卡片 */
+  .card{
+    background:#fff;border-radius:26px;padding:30px 22px;text-align:center;
+    box-shadow:0 12px 34px rgba(20,80,140,.09),0 2px 6px rgba(20,80,140,.04);
+    min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    margin-bottom:18px;border:1px solid #eef4f9;position:relative;
+  }
+  .card.pop{animation:pop .32s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes pop{0%{transform:scale(.94);opacity:.35}100%{transform:scale(1);opacity:1}}
+  .card .badge{
+    position:absolute;top:14px;left:16px;
+    font-size:11px;font-weight:700;letter-spacing:1px;
+    padding:4px 10px;border-radius:99px;
+  }
+  .badge.def{background:#e0f2fe;color:#0284c7}
+  .badge.side{background:#fef3c7;color:#b45309}
+  .word{font-weight:800;color:#0f172a;letter-spacing:2px;line-height:1.25}
+  .sub{margin-top:14px;font-size:13px;color:#9fb2c4;letter-spacing:1px}
+
+  /* 选项 */
+  .options{flex:1}
+  .opt{
+    width:100%;display:flex;align-items:center;gap:12px;
+    background:#fff;border:2px solid #e9eff6;border-radius:17px;
+    padding:15px 16px;margin-bottom:11px;font-size:15.5px;line-height:1.5;
+    color:#233246;text-align:left;cursor:pointer;font-family:inherit;
+    transition:border-color .15s,background .15s,transform .1s,opacity .2s;
+    box-shadow:0 2px 6px rgba(20,80,140,.04);
+  }
+  .opt:active{transform:scale(.985)}
+  .opt .tag{
+    flex:0 0 27px;height:27px;border-radius:9px;background:#f1f6fb;color:#5c7d9e;
+    font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;
+  }
+  .opt.right{border-color:#34d399;background:#ecfdf5}
+  .opt.right .tag{background:#34d399;color:#fff}
+  .opt.wrong{border-color:#f87171;background:#fef2f2}
+  .opt.wrong .tag{background:#f87171;color:#fff}
+  .opt.dim{opacity:.45}
+  .opt.lock{cursor:default}
+
+  /* 底部按钮 */
+  .footer{display:flex;gap:12px;margin-top:6px}
+  .btn{
+    flex:1;border:none;border-radius:15px;padding:14px;font-size:15px;font-weight:600;
+    font-family:inherit;cursor:pointer;transition:transform .1s,filter .15s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:#fff;color:#5c7d9e;border:2px solid #e6eef6}
+  .btn.main{background:linear-gradient(90deg,#38bdf8,#2dd4bf);color:#fff;box-shadow:0 8px 20px rgba(45,212,191,.32)}
+
+  /* 开始/结束面板 */
+  .panel{
+    background:#fff;border-radius:26px;padding:28px 22px;text-align:center;
+    box-shadow:0 12px 34px rgba(20,80,140,.09);border:1px solid #eef4f9;
+  }
+  .panel h1{margin:0 0 6px;font-size:25px;color:#0f172a;letter-spacing:1px}
+  .panel h1 span{color:#14b8a6}
+  .panel p{margin:0 0 20px;font-size:13.5px;color:#8ba3b8;line-height:1.7}
+
+  .row{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+  .row label{font-size:13px;color:#5c7d9e;font-weight:600;letter-spacing:.5px}
+  .row select{
+    padding:9px 14px;border-radius:12px;border:2px solid #e9eff6;background:#fff;
+    font-size:14px;color:#233246;font-family:inherit;font-weight:600;
+    outline:none;cursor:pointer;max-width:100%;
+  }
+  .row select:focus{border-color:#2dd4bf}
+
+  .chips{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+  .chip{
+    padding:9px 18px;border-radius:12px;border:2px solid #e9eff6;background:#fff;
+    color:#5c7d9e;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+    transition:all .15s;
+  }
+  .chip.on{border-color:#2dd4bf;background:#effcf9;color:#0f9b8a}
+  .chip[data-mode="side"].on{border-color:#f59e0b;background:#fffbeb;color:#b45309}
+  .chip[data-mode="mix"].on{border-color:#8b5cf6;background:#f5f3ff;color:#6d28d9}
+
+  .result{font-size:52px;font-weight:800;color:#14b8a6;margin:6px 0 2px;letter-spacing:-1px}
+  .result small{font-size:18px;color:#9fb2c4;font-weight:600}
+  .stat{font-size:14px;color:#7b93aa;margin-bottom:8px}
+  .subStat{font-size:12.5px;color:#9fb2c4;margin-bottom:22px}
+
+  .empty{
+    font-size:14px;color:#ef4444;background:#fef2f2;border-radius:12px;
+    padding:12px;margin-bottom:16px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 开始页 ============ -->
+  <div id="startPage">
+    <div class="panel" style="margin-top:32px">
+      <h1>词语<span>斩</span></h1>
+      <p>选择分组、题量和测试内容。<br>注释 = 释义辨析；侧重 = 词义侧重方向。</p>
+
+      <div class="row">
+        <label for="groupSelect">分组</label>
+        <select id="groupSelect"></select>
+      </div>
+
+      <div class="row">
+        <label>题量</label>
+        <div class="chips" id="numRow">
+          <button class="chip on" data-n="10">10</button>
+          <button class="chip" data-n="20">20</button>
+          <button class="chip" data-n="50">50</button>
+          <button class="chip" data-n="0">全部</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>测试内容</label>
+        <div class="chips" id="modeRow">
+          <button class="chip on" data-mode="def">注释</button>
+          <button class="chip" data-mode="side">侧重</button>
+          <button class="chip" data-mode="mix">混合</button>
+        </div>
+      </div>
+
+      <div id="warnBox" class="empty" style="display:none"></div>
+
+      <button class="btn main" id="startBtn" style="width:100%">开始背词</button>
+    </div>
+  </div>
+
+  <!-- ============ 答题页 ============ -->
+  <div id="quizPage" style="display:none;flex:1;flex-direction:column">
+    <div class="topbar">
+      <div class="brand">词语斩</div>
+      <div class="score">
+        <span class="ok">✓ <b id="okNum">0</b></span>
+        <span class="no">✗ <b id="noNum">0</b></span>
+      </div>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="meta"><span id="counter">1 / 10</span><span class="tip" id="tip">请选择正确的释义</span></div>
+
+    <div class="card pop" id="card">
+      <div class="badge def" id="badge">注释</div>
+      <div class="word" id="word">词语</div>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="footer">
+      <button class="btn ghost" id="skipBtn">跳过</button>
+      <button class="btn main" id="nextBtn" style="display:none">下一题</button>
+    </div>
+  </div>
+
+  <!-- ============ 结束页 ============ -->
+  <div id="endPage" style="display:none">
+    <div class="panel" style="margin-top:32px">
+      <p style="margin:0 0 4px;font-size:14px;color:#9fb2c4">本轮正确率</p>
+      <div class="result" id="rate">0<small>%</small></div>
+      <div class="stat" id="statLine">答对 0 题 · 答错 0 题</div>
+      <div class="subStat" id="groupLine"></div>
+      <button class="btn main" id="againBtn" style="width:100%">再来一轮</button>
+      <button class="btn ghost" id="homeBtn" style="width:100%;margin-top:10px">返回首页</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   一、词库数据：词语|释义
+   ========================================================= */
+const RAW = `
+笃定|内心确信、不犹豫|微不足道|指意义、价值等小得不值得一提|稀少|指数量少且不够充足
+确定|明确界定、无歧义|微乎其微|形容非常小或非常少|稀疏|指分布不密集有间隔
+淡定|情绪平和、不慌乱|微不可察|指细微到难以察觉|稀奇|指事物罕见且新奇特别
+镇定|危机中保持理性|不值一提|强调事物太轻微、不重要，不值得说起|稀零|指数量少且零散分散
+磨难|严重且持久的苦难|龙飞凤舞|形容书法笔势舒展活泼，也可比喻文章气势奔放|形态|指事物外在表现形式
+波折|过程中出现的阻碍起伏|天马行空|思想、想象力无拘无束，自由奔放|状态|指事物当前存在情况
+磨炼|在艰难中经受锻炼|不拘一格|指不局限于一种规格或方式，打破常规|状况|指事物整体发展情形
+挫折|遭遇失利、目标受阻|挥洒自如|形容写字作画运笔自然流畅，或举止潇洒从容|形状|指物体具体轮廓样子
+浩如烟海|形容文献、资料、书籍数量极多，极丰富|喜闻乐见|文艺作品、活动等，喜欢听，乐意看|精准|指准确且贴合具体需求
+纷繁芜杂|形容事物多而杂乱，没有条理|耳熟能详|听的次数多了，熟悉得能详尽地说出来|准确|指符合事实或标准无偏差
+汗牛充栋|形容藏书极多，堆得像屋子一样高|驾轻就熟|比喻对于技能、工作等有经验，做起来容易|完整|指包含所有部分，不残缺
+鳞次栉比|形容建筑物、船只等密集整齐|司空见惯|指某事常见频繁出现，不足为奇|透彻|指深入本质无遗漏
+日见雏形|指事物的初步形态一天天显现出来|另辟蹊径|另创一种新方法、新风格或新途径|重复|指多次再现同一内容
+方兴未艾|事物正在兴起、发展，一时不会终止|推陈出新|去糟粕，取精华|不断|指持续无间断
+如火如荼|比喻气势旺盛、热烈或激烈|招兵买马|组织或扩充力量、扩充人员|一再|指一次又一次
+如日中天|比喻事物发展到最兴盛、最强大的阶段|大展宏图|大规模地实施宏伟远大的计划或抱负|反复|指多次来回进行
+凤毛麟角|比喻珍贵而稀少的人或事物|抱薪救火|错误方法使灾祸扩大|得当|指符合情理或需求
+车载斗量|形容数量很多，多到可以用车载、用斗量|无济于事|对事情没有帮助或益处，解决不了问题|全面|指涵盖所有方面
+寥若晨星|形容数量稀少，像晨星一样稀疏|螳臂当车|不自量力，妄图抗拒强大的力量，必然失败|到位|指达到预期标准
+改造|通过调整实现事物的转变|杯水车薪|力量太小解决不了问题|深刻|指触及本质或程度深
+盘活|采取措施使资产、资源恢复活力，发挥作用|若即若离|形容关系不紧密，态度暧昧或保持一定距离|绵延不断|形容空间、时间等连续伸展，没有中断
+发掘|发现、探求隐藏的事物|分道扬镳|因目标、志趣等不同而各走各的路|源源不断|形容数量、供应等持续输送，没有中断
+优化|指采取措施使事物变得更好、更加优良|南辕北辙|比喻行动和目的正好相反|随波逐流|没有主见，跟着潮流或人群方向行动
+宽宏|指心胸开阔、度量大，形容人的品性胸怀|失之交臂|当面错过好机会，隐含遗憾感|人云亦云|别人说什么就跟着说什么，无独立思考
+宽泛|指范围广、不狭窄，界限不明确|关键|决定性、必要性|择善而从|选择好的做法或品德，去学习和遵循
+广阔|指面积、空间等广大宽阔|核心|中心性、基础性|拾人牙慧|拾取别人的话语或见解，当作自己的
+广泛|指涉及的面广、范围大，具有普遍性|主导|主动性、支配性|媲美|指品质、美好相当而并列
+不一而足|同类事物很多，列举不完|优势|相对性、有利性|比肩|指地位、实力相当而并列
+不胜枚举|数量极多，无法列举|盘根错节|比喻事物复杂纷乱，相互纠缠|鼎峙|指三方或多方并立对峙
+比比皆是|到处都是，形容极其常见|唇齿相依|关系密切，缺一不可|扛鼎|指能力超群能担重任
+数不胜数|数量极多，数也数不过来|千丝万缕|相互之间的联系非常多、非常细|所言不虚|说出的内容真实有依据，无虚假
+发展空间|指事物未来发展的余地、潜力或可拓展的范围|如影随形|比喻关系亲密，时刻相伴，不可分离|言之有理|说话有逻辑、符合道理，能让人认同信服
+先天优势|指事物天生具备的、与生俱来的有利条件|一脉相承|某种思想、文化、学说等前后相承，继承关系|当之无愧|承受荣誉、称号时完全配得上
+战略储备|指为应对战争、危机等而预先储备的物资、资源|相辅相成|两件事物互相配合，互相补充，缺一不可|名不虚传|名声和实际情况相符，非虚假传闻
+资源禀赋|指一个地区或国家天然拥有的各种资源的状况|不谋而合|没有事先商量，却想法或行动一致|得当|做法合适、恰当
+雪泥鸿爪|比喻往事遗留的记忆或痕迹|并行不悖|指同时进行，互不冲突|全面|范围广、不遗漏
+吉光片羽|比喻残存的珍贵文物或文献，也指珍贵事物的零星片段|手段|指达成目标的具体方法|到位|达到基本要求、合格
+屈指可数|形容数量极少|距离|指空间或心理上的间隔|深刻|影响的深度性
+不动声色|指在紧急或特殊情况下，克制情绪、隐藏反应|范围|指事物覆盖的界限或领域|绵延不断|形容空间、时间等连续伸展，没有中断
+熟视无睹|对眼前的事物漠不关心|强度|指事物强弱的程度|源源不断|形容数量、供应等持续输送，没有中断
+泰然自若|形容在紧急或困难情况下，态度从容，保持镇定|馈赠|无偿赠送财物或物品|随波逐流|没有主见，跟着潮流或人群方向行动
+无动于衷|指对令人感动或应该关注的事情毫无反应|启发|指通过引导使人领悟道理|人云亦云|别人说什么就跟着说什么，无独立思考
+举步维艰|指每迈出一步都很艰难，行动进展受极大阻碍|效法|指模仿他人做法去行动|择善而从|选择好的做法或品德，去学习和遵循
+孤军奋战|指独自一个力量应对困难，无外力支持协助|模仿|指照着他人样子行动|拾人牙慧|拾取别人的话语或见解，当作自己的
+一筹莫展|指一点计策、办法都想不出，面对问题无措|粗浅|指认识或内容浅显不深入|媲美|指品质、美好相当而并列
+凌空蹈虚|说话或做事脱离实际，脱离现实、缺乏根基|模糊|指事物形象或界限不清晰|比肩|指地位、实力相当而并列
+言不及义|指说话内容不着边际，不涉及正经或关键的道理|初步|指处于开始阶段不深入|鼎峙|指三方或多方并立对峙
+人云亦云|缺乏独立思考，没有主见、随声盲目附和|不攻自破|无需攻击，自身就会破灭|所言不虚|说出的内容真实有依据，无虚假
+虚有其表|外表看起来好，但内里空虚，没有真实的内涵|不名一文|一个钱也没有，形容极度贫穷|言之有理|说话有逻辑、符合道理，能让人认同信服
+马到成功|形容事情一开始就取得成功，进展顺利|不合时宜|与当前时代、情境不符，无法适应|当之无愧|承受荣誉、称号时完全配得上
+言之有物|指文章或说话内容具体、充实，有实际内容|不以为然|不认为是对的，表不同意|名不虚传|名声和实际情况相符，非虚假传闻
+言之成理|指说话或写文章的道理讲得通顺、合乎逻辑|去伪存真|去除虚假成分，保留真实内容|清晰|指事物清楚无模糊
+不绝如缕|比喻局势危急或某种事物后继乏人、即将中断|浅尝辄止|指不深入钻研，满足于表面接触|去粗取精|去掉粗糙部分，提取精华内容
+生机勃勃|形容充满生命力，活力旺盛|一蹴而就|踏一步就成功，形容事情轻而易举|抽丝剥茧|像抽丝般层层拆解，理清复杂事物
+势不可挡|事物发展的来势猛烈，难以遏制，无法阻挡|久久为功|持之以恒，才能成就功业|按图索骥|依照已有的线索去寻找
+源远流长|比喻历史悠久，根基深厚|一步登天|一下子达到极高地位，进展极快|连绵|指事物连续不断无间断
+美轮美奂|形容房屋高大华丽，扩展至装饰、场景等具体事物|半途而废|做事不能坚持到底，有始无终|盘旋|指绕着某点或方向转动
+薪火相传|比喻学问、技艺、精神、文明文化等一代代传承下去|一蹶不振|遭受一次挫折以后就再也振作不起来|交错|指事物相互交叉错杂
+一脉相承|某种思想、文化、学说等前后相承|持之以恒|长久地坚持下去，不轻易放弃|清晰|指事物清楚无模糊
+彪炳千古|形容伟大的事迹流传千秋万代，永垂不朽|危言耸听|故意说夸大吓人的话，使人震惊|变幻莫测|变化多端且难以预料
+峰回路转|事情经历挫折、阻碍后，出现新的转机或局面|增量|新增的数量或部分|斗转星移|季节时间更迭或世事变迁
+柳暗花明|比喻在困境中突然出现转机，看到希望|存量|已存在、累积的数量或部分|此消彼长|双方力量、数量交替增减变化
+苦尽甘来|艰难的日子过去，美好的日子到来|潜形匿迹|隐藏自身形迹，不被他人发现|日异月殊|每天每月都有不同，变化显著
+出奇制胜|用奇兵或奇计战胜敌人，比喻用对方意想不到的方法取胜|混淆视听|用假象、谎言扰乱，使人看不清真相|守株待兔|比喻心存侥幸等机会，不主动努力
+并行不悖|指同时进行，互不冲突|良莠不齐|好的坏的混杂在一起|刻舟求剑|拘泥旧法，不知根据实际灵活处理
+建立|创建的开端性|留存|保存、遗留下来|照本宣科|形容讲课发言死板不生动
+成立|组建的完成性|无影无踪|完全消失，没有丝毫踪迹可寻|循规蹈矩|遵守既定规则不突破，做事拘泥成规
+成就|成果的达成性|扑朔迷离|事情错综复杂，难以辨别清楚|去粗取精|剔除粗糙部分，保留精粹内容
+树立|对象的抽象性|存积|积存、累积起来|如法炮制|依照原有方法做事，不做方法突破
+著名|指名气大且被广泛知晓|荡然无存|原有的事物完全消失，一点不剩|弃若敝履|像扔旧鞋一样丢弃，极其轻视不屑
+知名|指被人知道且有一定名气|血脉|血缘或文化传承脉络|固步自封|固守现状，不接受新事物
+发祥地|指重大事物如文明、运动的起源根基处|根源|事物产生的根本来源或原因|漠然置之|冷漠对待，不予理睬，毫不在意
+发源地|指事物最初产生的具体场所|底色|事物的基础特征或本质基调|原封不动|保持最初样子，未作任何修改损坏
+效果|行动产生的有效结果|记忆|对经历的留存或印象|束之高阁|搁置一旁不用，长期闲置
+结果|事物发展的最终状态|挖掘|探寻隐藏或深层价值|人言籍籍|人们议论纷纷，到处都是传言
+后果|常指事物引发的不良结果|重塑|打破原有重新构建|众口铄金|众人言论能熔化金属，比喻舆论力量大
+恶果|坏行为导致的有害结果|倡导|带头提倡理念或行为|三人成虎|三人说有虎就有人信，指谣言易让人信
+唾弃|因鄙视而厌恶排斥|实现|使目标或构想成为现实|流言蜚语|毫无根据的诽谤性言论
+摒弃|坚决舍弃不愿保留|机缘|机会与缘分结合|争先恐后|争着向前，唯恐落后
+扬弃|保留精华并舍弃糟粕|境遇|处的境况与遭遇|繁殖|生物产生后代延续物种
+遗弃|抛弃应管的人或物|契机|引发变化的关键|身先士卒|领导者带头走在前面，亲自行动
+无出其右|无人能超过，在某方面最优秀、居首位|时机|适合行动的特定时间|一马当先|行动、作战冲锋在前，起带头作用
+独树一帜|风格、观点、方法等方面自成一家|界限|区分事物的分界标准|生成|通过转化或创造出现新物
+三足鼎立|三方分立，互相抗衡，势力相当|隔阂|人与人之间的情感阻隔|首当其冲|最先受到攻击或遭遇灾难
+盛极一时|在一个时期内特别兴盛|壁垒|阻碍进步的屏障|产生|由某种原因引发新事物
+融会贯通|把各方面知识融合，并全面透彻理解|障碍|阻碍事物进展的事物|规律|事物内在本质联系
+蔚然成风|事物逐渐发展、盛行，形成风气|名头|指名称或称号|持续|事物状态不间断延续
+此消彼长|双方或多方的力量、数量相互变化，交替增减|标签|指标识性符号|根本|事物核心基础部分
+深入人心|思想、理论、政策等被广大群众理解并拥护|标记|指提示性记号|单一|种类或形式单一
+如数家珍|像数家里珍宝般熟悉事物|噱头|指吸引关注的花招|事实|客观存在的真实情况
+驾轻就熟|做熟悉的事轻松熟练|交汇|指事物相遇汇聚|集中|事物向中心聚集汇聚
+望其项背|能赶上对方|结合|指事物间联结|原则|言行遵循的准则标准
+游刃有余|处理事情熟练且有余地|融汇|指事物融合汇聚|片面|认识或看待不全面
+并驾齐驱|并排前进不分先后|融合|指事物合成一体|土崩瓦解|像土崩塌、瓦破碎一样彻底崩溃
+熟能生巧|熟练后掌握技巧更顺手|道听途说|从路边、途中听到的无根据传言|灰飞烟灭|像灰、烟一样消失得无影无踪
+势均力敌|双方力量相当不分高下|尾大不掉|机构或组织庞大难管控，指挥失灵|化为乌有|变得什么都没有，原本存在的事物完全消失
+严丝合缝|缝隙严密无空隙|众志成城|众人团结一心，能形成强大力量|分崩离析|形容团体、组织等分裂瓦解，失去凝聚力
+锱铢必较|对极细微利益或小事都过分计较|阳奉阴违|表面顺从附和，实际违背抵触|羁绊|人与人或事物间的牵绊束缚
+未雨绸缪|提前准备，防患尚未发生的问题|同仇敌忾|众人怀着共同的愤怒，对抗共同敌人|累赘|多余且造成负担的人或物
+谨小慎微|对细小事情过分谨慎|分崩离析|整体四分五裂，彻底瓦解|阻力|阻碍事物前进的力量或因素
+防微杜渐|在问题萌芽时及时制止|群策群力|集中众人智慧和力量，共同做事|弊端|制度、事物中存在的缺陷问题
+滋养|提供营养促进生长|南辕北辙|行动与目标完全相反|白云苍狗|比喻世事变化不定，像白云变苍狗
+完善|使事物完备无缺|和衷共济|大家同心协力，共同克服困难|斗转星移|指星斗变动位置，形容时间推移或世事变迁
+涵养|培育蓄积、慢慢滋养|蜕变|事物发生本质性转变|翻天覆地|形容变化巨大而彻底，改变了原有面貌
+维护|保护事物不受损害|严肃|态度庄重不随意|沧海桑田|大海变农田、农田变大海，比喻世事巨变
+保护|采取措施守护事物|持续|事物状态长久保持|串联|将分散事物连贯起来，形成整体
+衡量|比较事物价值或程度|演化|生物或事物长期渐变发展|拼接|把不同部分拼合在一起，组成新事物
+充沛|资源、精力等充足丰富|神秘|事物难以捉摸知晓|集合|将分散的人或事物聚集到一起
+助力|提供帮助推动事物|相继|多个事物先后接连发生|连缀|把零散部分连接起来，使成整体
+提升|使水平、能力向上提高|运动|物体位置或状态变动|平衡|事物数量、总量上的均衡
+无人问津|没人探问、关注，被冷落|神奇|事物奇妙令人惊叹|和谐|事物间配合融洽无冲突
+改善|使状况、条件变得更好|广泛|范围覆盖面积大、涉及面广|协调|调整各方使配合得当
+爱莫能助|心里愿帮，却因能力不足做不到|膨胀|物体体积扩大或规模增长|匹配|事物间相互对应契合
+增强|使力量、效果更强劲有力|冷酷|待人冷漠无温情|齐头并进|多方面、多事物同时向前推进
+听之任之|任凭坏事发展，不干预|及时|在合适时机快速行动|多管齐下|从多个方面同时采取措施或方法
+发挥|把潜在能力、作用展现出来|提升|使水平、质量等向上提高|齐抓共管|多个主体共同负责、一起管理某项事务
+鞭长莫及|因距离或能力不足无法顾及|逐渐|变化慢慢发生|多措并举|采取多种不同的措施解决问题
+青出于蓝|学生超老师、后人超前人|绘制|用工具将构想转化为图形|不期而遇|没有预先约定就意外遇见
+透彻|理解分析深入本质无偏差|抬升|使位置、高度等向上移动|不约而同|没商量却同时有相同行动或想法
+后来居上|后起者超过先发展者|渐次|按顺序逐步进行|萍水相逢|像浮萍般偶然相遇，交情浅薄
+畅快|心情或体验舒畅痛快无阻滞|勾勒|用简单线条画轮廓或概括|旧雨重逢|老朋友久别之后再次相见
+技高一筹|技艺能力比他人高出一些|拉升|使数值、幅度等向上拉涨|一脉相承|从同一根源传承下来，有延续性
+全面|涵盖所有方面无重要遗漏|逐次|一次接着一次地进行|一以贯之|用同一原则贯穿始终，不中途改变
+更胜一筹|比另一方水平、效果稍好|描绘|用语言或画笔细致展现样貌|一如既往|和过去一样，没有任何变化
+淋漓|尽情展现无保留|上升|事物自然向上变化|自始至终|从开始到结束的整个过程
+气势磅礴|气势盛大雄浑|渐渐|程度、过程缓慢变化|鞭辟入里|分析问题深刻透彻，直达核心
+正风肃纪|整顿不良风气、严肃纪律|描画|照着样子画或细致描摹细节|莫衷一是|众人意见不同，无法达成一致
+变化多端|变化种类多、样式繁杂|全局性|覆盖整体范围、统筹各方的属性|各执一词|各自坚持自己的说法，互不相让
+明辨是非|清晰分辨正确与错误|一波三折|事情进程中多次遇到波折，不顺利|众口难调|众人需求不同，难以同时满足
+波澜壮阔|声势浩大、场面宏伟|战略性|长远目标、影响关键决策的属性|匪夷所思|想法离奇古怪，超出平常人的认知
+正本清源|从根源上解决问题|起伏不定|状态或情况上下波动，无稳定状态|独出心裁|构思或做法独特新颖，不同于常规
+波诡云谲|局势或人心变幻莫测|前瞻性|预见未来趋势、提前规划的属性|行之有效|采取的方法或措施能起到实际效果
+明察秋毫|细致观察细微事物|大起大落|变化幅度极大，经历显著升降|多种多样|事物的种类或样式繁多，不单一
+打造|通过行动构建事物|时代性|贴合当下特征、时代需求的属性|亲和力|让人感到亲切、容易接近的特质
+回忆|过往经历的留存|一泻千里|水流奔涌或势头迅猛无阻|攻击性|具有攻击、冒犯他人或事物的倾向
+描绘|用语言、画笔展现细节|成功之道|实现成功的方法或路径|独特性|具有区别于其他的特殊属性
+贯通|前后连接打通|封锁|用强制手段封闭、隔断|吸引力|能吸引他人或事物的力量
+锤炼|反复打磨使完善|适得其反|结果与预期目标完全相反|如影随形|关系极紧密，时刻相伴
+证实|证明事实成立|必然之果|按规律发展必然产生的结果|迅速|速度快、用时短
+勾勒|简要描绘轮廓|束缚|约束限制，使不能自由行动|息息相关|联系密切，相互影响
+串联|将事物连接起来|殊途同归|不同路径最终达到同一目的|迅猛|速度快且势头猛
+求同存异|寻求共同，保留不同意见|应有之义|本该具备的含义或内容|一脉相连|有共同起源或传承
+保有|维持拥有、保留已有事物|遏制|制止、控制，不让发展|飞快|速度非常快
+兼容并蓄|包容不同事物或思想，加以吸收|背道而驰|朝着与目标相反的方向行进|瞬息万变|短时间内变化多而快
+提高|使水平、质量向上增高|必由之路|抵达目标必须经过的途径|推陈出新|剔除旧的，产生新的
+和衷共济|同心协力，共克困难|围猎|从四周包围捕捉、围剿|变幻莫测|变化多、无规律、难预测
+坚持|持续保持行为、信念不放弃|舍本逐末|舍弃根本，追求次要|更新换代|旧被新取代，代际更替
+一视同仁|对不同对象同等看待、不偏袒|走马观花|观察粗略、不细致|日新月异|每天每月都有新变化
+突破|打破原有限制、障碍|浅尝辄止|略微尝试就停止|与时俱进|随时代发展而进步
+出神入化|技艺高超精妙，达绝妙境界|缘木求鱼|方法错误，达不到目标|纷繁复杂|多而杂，难以理清
+势不可当|势头猛烈，无人可挡|集中|把分散的聚到一起|乘势而上|借有利形势继续发展
+鬼斧神工|技艺精巧，似非人工所为|凝集|物质由散变聚|退避三舍|主动避让，避免冲突
+匠心独具|设计制作有独特巧妙构思|关注|把注意力投向对象|游刃有余|技艺熟练，应对从容
+桀骜不驯|性情倔强，不愿服从管束|汇合|不同事物聚向一处|望而却步|看到困难就退缩
+巧夺天工|技艺精巧，胜过天然|聚焦|精力集中在特定目标|轻而易举|事情容易，不费力
+怀柔|用温和手段安抚|凝聚|靠力量、情感聚合|束手无策|毫无解决办法
+参与|加入事务或活动|结合|把不同事物连成整体|易如反掌|事情极其简单容易
+笼络|用手段拉拢他人|汇聚|从各处聚到一起|裹足不前|因顾虑害怕而停步
+合作|多方协同做事|涓滴不漏|说话做事无遗漏|长驱直入|顺利无阻地前进
+特制|为特定需求专门制作|千帆竞渡|众多船只竞相航行|作为|行动上取得的成就
+扶持|支持助力发展|风高浪急|风大浪猛，形势不稳|磨难|遭遇的困苦挫折
+治民|治理管理民众|海天一色|大海天空同色|日久弥新|越久越鲜活有价值
+协助|辅助他人做事|明知故犯|明知错仍故意去做|刻苦|勤奋不怕吃苦
+公平|不偏不倚很公正|老调重弹|旧话旧理重复说|磨练|在困境中锻炼
+精打细算|形容细致节约，力求节省|重蹈覆辙|不吸取教训再犯旧错|经久不衰|长时间仍有生命力
+便捷|方便快捷少繁琐|以身试法|明知法律仍故意触犯|吃苦|承受困苦劳累
+物尽其用|让物品充分发挥效用，不造成浪费|脚踏实地|做事踏实认真，一步一个脚印|磨砺|在实践中打磨变强
+科学|符合客观的规律|等量齐观|对不同事物不加区别同等看待|源源不断|连续不断、不中断
+量入为出|根据收入情况安排支出，不超支|因地制宜|按当地实际情况制定办法|奉献|不计回报地付出
+精确|内容准确无偏差|不偏不倚|公正中立，不偏向任何一方|磨炼|在艰苦环境中锻炼提升
+开源节流|增加收入来源同时节省开支|步步为营|谨慎稳妥，一步一步推进|滔滔不竭|说话思路多、连续不断
+背道而驰|朝着与目标完全相反的方向行进|面面俱到|各方面都照顾到，无遗漏|弱化|使变弱
+大相径庭|彼此之间差别极大，毫无相近之处|坚定不移|立场意志坚定不动摇|形同陌路|原本熟悉变得像陌生人
+千篇一律|事物形式、内容单调重复，毫无变化|督促|监督并推动行动|式微|由兴盛走向衰落
+如出一辙|言行或做法非常相似，几乎没有差别|负担|承担的压力、责任|淡化|逐渐减弱、模糊
+认可|对事物、观点的接纳与肯定|监督|查看确保合规|渐行渐远|关系或距离慢慢变远
+手忙脚乱|做事慌张无条理，难以从容应对|累赘|多余且拖累的人或物|没落|由兴盛转向衰败
+先机|提前获得的有利机会或条件|鞭策|激励促使奋进|淡出|逐渐退出、不再显眼
+拖泥带水|做事不干脆利落，留有多余环节|包袱|心理或事物拖累前行|今非昔比|现在与过去差别巨大
+主动|不依赖外力推动、积极行动|催促|促使加快速度|衰亡|逐渐衰落直至灭亡
+左支右绌|能力或资源不足，难以全面应付|义务|依法或道德应尽责任|遗失|丢失、遗漏
+优势|相比他人更突出的有利条件|推崇备至|极其推重敬佩|每况愈下|情况一天比一天糟
+进退维谷|无论进退，都陷入难以摆脱的困境|身体力行|亲身体验并努力践行|消弭|彻底消除、消灭
+无以复加|程度达到顶点，不能再进一步增加|全力以赴|投入全部力量去做|坚定|立场意志稳固不动摇
+自信|对自身能力、判断的信任|孜孜以求|勤勉不懈地追求目标|关键|起决定作用的部分
+异乎寻常|跟平常情况不同，显得特别|束手就擒|放弃抵抗任由抓捕|秉持|持有并遵循理念原则
+前所未有|以前从未有过，是全新的情况|一探究竟|深入探寻事物真相|精髓|最核心精粹的部分
+耐心|耐受等待、坚持完成的心态|坐以待毙|坐着等待死亡，不主动|追求|主动寻求目标理想
+无与伦比|没有能与之相比的，水平极高|见机行事|根据局势灵活行动|本质|事物根本属性
+清醒|认知清晰、不模糊混乱|自投罗网|主动陷入圈套|培养|培育使能力形成
+口口相传|信息通过人们口头依次传递|随波逐流|跟着他人或潮流走|奥妙|深奥奇妙的道理
+锻炼逻辑|通过训练提升思维逻辑的条理性|自取灭亡|自身行为导致毁灭|海纳百川|胸怀宽广，包容万物
+奔走相告|人们奔跑着互相传递喜讯、重大消息|静观其变|冷静观察局势变化|和衷共济|同心协力，共渡难关
+千帆竞发|众多事物竞相发展|质朴|实在单纯|惺惺相惜|同类人彼此理解欣赏
+无源之水|没有基础，难以存在|发酵|微生物分解或深化，喻事态发展|安危与共|共同承担安危利害
+百家争鸣|思想流派自由交流|朴实|实在不浮夸|俭朴|生活消费节俭
+昙花一现|美好事物很快消失|滋生|自然产生繁殖|点燃|触发情感或行动
+龙争虎斗|强者之间激烈争斗|重视|认真对待|朴素|简洁不华丽
+空中楼阁|脱离实际、无基础|习以为常|经常见而觉得平常|孕育|培养新事物
+星火燎原|弱小事物发展壮大|赞誉|称赞颂扬|奴役|强制手段役使他人
+纸上谈兵|空谈理论，不切实际|心悦诚服|内心真心信服|骚乱|大规模混乱不安
+轻盈曼妙|姿态轻快柔美|青睐|喜爱或重视|毅力|坚持目标的意志
+感恩|对帮助心存感激|欢迎|高兴迎接|束缚|约束限制自由
+狂暴激烈|性情或态势凶猛|虽败犹荣|失败仍有荣耀|骚动|局部混乱躁动
+畏惧|害怕而不敢面对|保障|采取措施确保需求实现|耐力|承受疲劳压力
+柔情似水|情感温柔细腻|徒劳无功|付出努力却没收获成果|局限|受条件限制无法突破
+刺激|引发身心反应|维护|保护事物保持原有状态|扰乱|故意破坏秩序
+跌宕不羁|性格洒脱不受约束|本末倒置|颠倒主要与次要的关系|致力|把力量用在特定目标
+敬畏|既敬重又畏惧|控制|对事物进行约束管理|限制|规定范围不让超出
+与世隔绝|与外界完全隔断|黯然失色|因对比失去原有光彩|扰动|轻微干扰使变动
+心旷神怡|心情开阔舒畅|相形见绌|对比后显得远远不如|定力|抗干扰保持稳定
+寸草不生|土地贫瘠荒凉|自惭形秽|因不如人而感到惭愧|充足|数量足够满足需求
+怦然心动|内心突然被触动|比上不足|和强者比有差距|再现|重新展现过去场景
+人迹罕至|很少有人到达|遥遥领先|远超他人处于前列|恢复|回到原有状态
+心驰神往|深深向往|删繁就简|去除繁杂保留简洁|充沛|精神、雨水饱满富足
+冰冻三尺|事物形成非一日之功|迎难而上|面对困难主动前进|复原|使受损事物恢复原态
+赏心悦目|看到美好事物心情好|惜墨如金|写作时慎重使用笔墨|复兴|衰败事物重新兴盛
+耸立|高高向上凸起|与众不同|和他人存在明显差异|丰沛|雨水、情感丰富
+屹立|像山峰稳固挺立|言简意赅|语言简练而含义完备|修复|修补完善破损处
+矗立|高大垂直立起|独树一帜|自成一派树立风格|弘扬|广泛宣扬优秀事物
+心灵手巧|心思灵敏，动手强|字斟句酌|逐字逐句反复推敲|充实|内容或内心饱满
+伫立|长时间站立|复杂|结构或关系多而杂|还原|回归事物原本样貌
+独具匠心|思路独特巧妙|漫长|时间或过程持续久|振兴|推动事业蓬勃发展
+首当其冲|最先遭受冲击|简易|流程简单易操作|拓展|扩大范围或规模
+横空出世|突然惊艳出现|短暂|持续时间短|凋零|草木衰落，也指事物衰败
+声名鹊起|名声快速提升|简短|长度或内容短且简洁|崛起|迅速兴起、壮大
+必不可少|绝对需要，无法缺|迅速|动作或变化发生快|沉沦|陷入不好的境地难以自拔
+初露锋芒|刚开始显露才能|繁杂|种类或头绪多而乱|蛰伏|长期潜伏，等待时机
+不可或缺|至关重要，不能缺|冗长|时间或内容多余过长|绽放|花朵开放，比喻充分展现
+应运而生|顺应形势而产生|严厉|态度或手段严格厉害|浸润|慢慢渗透、逐渐影响
+崭露头角|突出显露出本领|懈怠|松懒、不积极|瓦解|整体分裂崩溃
+屡见不鲜|经常见到不新奇|平庸|平凡、没有突出之处|弥散|向四周扩散散布
+大放异彩|表现卓越亮眼|卓越|非常优秀、超出一般|凝聚|聚集、团结到一起
+脱颖而出|优势从群体中凸显|严谨|严密谨慎、无疏漏|涣散|散漫、不集中
+对症下药|针对根源采取措施|敷衍|表面应付、不认真|聚拢|集合到一起
+审时度势|观察估量形势|充沛|充足而旺盛|离散|分散、分离
+见微知著|从细微处看本质趋势|匮乏|缺乏、不足|弥合|使裂缝或分歧愈合
+当机立断|关键时刻迅速决断|富足|丰富充足|割裂|强行分开、使不统一
+轻重缓急|事情有重要次要、急迫舒缓之分|贫瘠|不肥沃、不丰富|衔接|事物首尾相接、连贯
+循序渐进|按一定顺序、步骤逐渐推进|充裕|充足有余|脱节|原本相连的事物断开
+融会贯通|把各方面知识融合并全面透彻理解|稀缺|稀少、难得|断层|原本连续的事物出现中断
+举一反三|从一件事类推而知道许多事|饱和|容纳到最高限度|裂变|分裂、发生重大变化
+触类旁通|掌握一类事物的规律，进而通晓同类|过剩|数量超过需要|聚变|聚合、发生重大变化
+温故知新|复习旧知识，获得新体会|均衡|平衡、均匀|沉淀|积累、积聚下来
+`;
+
+/* =========================================================
+   二、侧重数据：词语|侧重
+   （只给部分词条配备了侧重描述，侧重模式下仅抽取这些词）
+   ========================================================= */
+const SIDES = `
+笃定|主观信念坚定，无动摇，内心状态，语境更具主观感性
+确定|客观事实清晰，无模糊，事物界定结果，语境更具客观性
+淡定|日常压力下从容，不焦躁，日常心态表现，语境较轻松
+镇定|紧急局面克制紧张，稳状态，突发场景应对，语境具紧迫性
+磨难|苦难强度大、持续久，沉重困境经历，语境具痛苦性
+波折|事务进展有曲折，不顺畅，事件推进状态，语境较温和
+磨炼|困难转化为成长动力，能力成长过程，语境具积极感
+挫折|单次明确的失败，针对性强，目标相关失利，语境具针对性
+浩如烟海|多而广，描述文献、资料庞大体量
+纷繁芜杂|数量多且混乱无序
+汗牛充栋|多而堆，具体实物的堆积情况
+鳞次栉比|具体事物如房屋、船只、摊位排列的密集与整齐
+日见雏形|发展初期的形态
+方兴未艾|新兴事物处于上升期
+如火如荼|规模大、气势盛、氛围热烈
+如日中天|发展状态的鼎盛
+凤毛麟角|稀有且珍贵，强调数量极少且具有较高价值
+车载斗量|普通、价值不高的事物
+寥若晨星|数量极少，仅强调稀少，不必然是珍贵
+微不足道|事物本身价值或影响极小
+微乎其微|数量、概率上的极小
+微不可察|物理层面的细微，肉眼或感官难以发现
+不值一提|主观认为没必要提及
+稀少|数量稀缺性
+稀疏|空间分散度
+稀奇|罕见特殊性
+稀零|零散分布态
+形态|整体样貌态
+状态|实时运行态
+状况|综合情形度
+形状|外在轮廓性
+精准|准确无误
+准确|正确性
+完整|不残缺
+透彻|彻底理解、无死角
+重复|机械动作
+不断|过程的持续状态
+一再|频率的次数多少
+反复|琢磨、推敲
+得当|做法合适、恰当
+全面|范围广、不遗漏
+到位|达到基本要求或合格
+深刻|影响的深度性
+改造|对原有事物进行修改、变更，使适合新的需要
+盘活|闲置、低效事物激活，产生效益
+发掘|从隐藏、未被注意的状态中找到并展现出来
+优化|在原有基础上改进，提升质量、效率等
+宽宏|待人宽容
+宽泛|范围的广度和模糊性
+广阔|地域或空间的辽阔，用于描述自然环境、物理空间
+广泛|范围的全面和普及，影响、应用的广度
+不一而足|隐含列举了部分，同类还有很多的语境
+不胜枚举|隐含试图列举但数量太多而失败的意味
+比比皆是|隐含事物分布的广泛性和普遍常见性
+数不胜数|可用于任何数量极多的场景
+发展空间|未来的可能性和拓展性
+先天优势|与生俱来的优越性
+战略储备|出于长远战略考虑的储备行为
+资源禀赋|天然具备的资源条件
+雪泥鸿爪|痕迹的偶然性 + 易逝性
+吉光片羽|残存性 + 珍贵性
+屈指可数|数量少到可以计数，仅强调数量，不必然包含珍贵
+不动声色|内心有波动但表面无显露
+熟视无睹|看见却假装没看见的主观忽视
+泰然自若|面对压力时的心态稳定，不慌乱
+无动于衷|主观上的冷漠、麻木，内心毫无触动
+举步维艰|行动中困难重重，而非无计可施
+孤军奋战|孤立无援的状态，而非困难程度
+一筹莫展|思路枯竭无对策，而非行动艰难
+凌空蹈虚|内容或行动的空泛性、不落地，贬义
+言不及义|言语无关性、无意义，多含批评
+人云亦云|思想上的盲从性，贬义
+虚有其表|外在形式好看但实质匮乏，贬义
+马到成功|强调行动和结果的高效性
+言之有物|内容的实在性，与“凌空蹈虚”“言不及义”相对
+言之成理|逻辑的合理性，强调论证的严谨性
+不绝如缕|似断非断的临界感
+生机勃勃|事物处于蓬勃发展的状态
+势不可挡|趋势的强大与不可抗拒
+源远流长|存在的时间长、起源早
+美轮美奂|视觉的壮观与精致
+薪火相传|传承的延续性
+一脉相承|传承同一源头与持续延续
+彪炳千古|成就的辉煌性与影响的持久性
+峰回路转|转折的突发性，不必然指向美好结果
+柳暗花明|困境中见希望，明确指向向好的结果
+苦尽甘来|苦难与甘甜的对比，先苦后甜的结果
+出奇制胜|策略的意外性与有效性
+并行不悖|同时进行、互不冲突
+建立|创建的开端性
+成立|组建的完成性
+成就|成果的达成性
+树立|对象的抽象性
+著名|名气大且被广泛知晓
+知名|被人知道且有一定名气
+发祥地|起源的重要性
+发源地|起源的实际位置
+效果|好的效用
+结果|客观中性
+后果|负面性
+恶果|严重危害
+唾弃|强烈反感态度
+摒弃|主动丢弃不好
+扬弃|辩证取舍
+遗弃|对象客观非情绪
+无出其右|程度最高、无人能及，绝对领先
+独树一帜|独特性、创新性，有鲜明个性
+三足鼎立|必须三方制衡，地位、实力相近
+盛极一时|达到顶峰
+融会贯通|将分散转为系统并灵活运用
+蔚然成风|普遍性、群体性，某种现象被广泛接受
+此消彼长|动态平衡、相互影响
+深入人心|深度认同、持久性
+如数家珍|熟悉程度高、了如指掌
+驾轻就熟|做事熟练、轻松无压力
+望其项背|可追赶、非远超状态
+游刃有余|应对从容、无局促感
+并驾齐驱|双方实力相当、同步向前
+熟能生巧|熟练出技巧、效率提升
+势均力敌|力量对等、难分胜负
+严丝合缝|衔接紧密、无疏漏之处
+锱铢必较|过分计较细微之处、不肯吃亏
+未雨绸缪|事前筹备、防患于未然
+谨小慎微|处事态度谨慎、畏葸不前
+防微杜渐|早控萌芽问题、避免恶化
+滋养|营养供给、促进生长
+完善|使完备、补全缺陷
+涵养|培育滋养、长期积淀
+维护|保护维持、保持现状
+保护|守护防御、免受伤害
+衡量|比较判断、评估取舍
+充沛|充足丰富、数量饱满
+助力|帮助推动、起辅助作用
+提升|程度向上进阶、档次提高
+无人问津|缺乏他人过问与关注
+改善|状态优化、变得更好
+爱莫能助|主观有心、客观无力
+增强|强度强化、力度加大
+听之任之|消极放任、该管不管
+发挥|能力实际展现、释放效用
+鞭长莫及|客观受限、够不着、管不到
+青出于蓝|后人超越前人、水平更高
+透彻|认知深度、彻底性
+后来居上|后发超越先发、后来更强
+畅快|感受舒适愉悦、无压抑
+技高一筹|技艺能力更高、略胜一筹
+全面|范围完整、无死角
+更胜一筹|水平效果更优、略占上风
+淋漓|充分释放、毫无保留
+气势磅礴|气势盛大、极具震撼力
+正风肃纪|反腐整顿、严肃纪律
+变化多端|变化多样、难以预判
+明辨是非|辨对错、立场明确
+波澜壮阔|声势场面宏伟、有震撼感
+正本清源|从根源着手、彻底解决
+波诡云谲|变幻莫测、复杂难辨
+明察秋毫|观察细微、判断精准
+打造|主动构建、创造形成
+回忆|记忆留存、回想过往
+描绘|具体描摹、细致刻画
+贯通|破除阻隔、逻辑或空间连通
+锤炼|反复打磨、精益求精
+证实|验证事实、确认真假
+勾勒|简洁画轮廓、抓大体
+串联|连接整合、串成整体
+求同存异|找共识留差异、包容不同
+保有|持有留存、不丢失
+兼容并蓄|包容多样、主动吸纳
+提高|程度、数值向上提升
+和衷共济|同心协作、共渡难关
+坚持|持续坚守、不中断
+一视同仁|平等对待、无差别心
+突破|打破瓶颈、超越边界
+出神入化|技艺高超、境界绝妙
+势不可当|势头猛烈、不可阻挡
+鬼斧神工|技艺精巧、非人力可及
+匠心独具|构思独特、巧妙新颖
+桀骜不驯|性情倔强、不愿顺从
+巧夺天工|技艺精巧、胜过天然
+怀柔|温和安抚、笼络人心
+参与|行动加入、置身其中
+笼络|主动拉拢、结为己用
+合作|协同互动、配合完成
+特制|针对性制作、专属定制
+扶持|助力支持、帮助成长
+治民|治理管理、统治管控
+协助|辅助支持、从旁帮忙
+公平|处事公正，不偏袒
+精打细算|细致规划、减少不必要消耗
+便捷|方便省事、效率高
+物尽其用|充分利用资源、避免闲置浪费
+科学|遵循规律、合理合理
+量入为出|收支匹配、不做超额消费
+精确|准确无误、细节到位
+开源节流|增收与节支结合，平衡收支
+背道而驰|背离目标，方向全然相反
+大相径庭|差异明显，互不相同
+千篇一律|缺乏新意，单调雷同
+如出一辙|高度相似，宛如一致
+认可|态度上的赞同与承认
+手忙脚乱|慌张无序、应付不过来
+先机|时间上的领先与主动
+拖泥带水|拖沓不干脆、有多余残留
+主动|行为上的能动与自主
+左支右绌|能力不足、应对吃力
+优势|对比中的领先
+进退维谷|进退两难、无合适出路
+无以复加|程度至极致，无法再提升
+自信|内在的信心状态
+异乎寻常|与常规有别，具备特殊性
+前所未有|此前未出现，有独特性
+耐心|心态的持久性
+无与伦比|水平超众，无可比拟
+清醒|思维的明晰性
+口口相传|传播方式的口头性
+锻炼逻辑|思维能力的培养性
+奔走相告|传播时的急切与喜悦感
+千帆竞发|竞争激烈、蓬勃
+无源之水|缺乏根基
+百家争鸣|多元思想活跃
+昙花一现|存在时间短暂
+龙争虎斗|势均力敌对抗
+空中楼阁|不切实际
+星火燎原|从小变大
+纸上谈兵|理论脱离实践
+轻盈曼妙|形态轻柔优美
+感恩|情感回馈
+狂暴激烈|状态猛烈
+畏惧|情绪怯懦
+柔情似水|情感温和
+刺激|作用引发
+跌宕不羁|洒脱无拘
+敬畏|态度双重
+与世隔绝|隔绝封闭
+心旷神怡|身心愉悦
+寸草不生|环境恶劣
+怦然心动|即时好感
+人迹罕至|偏僻荒凉
+心驰神往|渴望追求
+冰冻三尺|长期积累
+赏心悦目|视觉满足
+耸立|形态突兀
+屹立|状态稳固
+矗立|姿态挺拔
+心灵手巧|能力灵巧
+伫立|时间持续
+独具匠心|想法创新
+首当其冲|优先受影响
+横空出世|突发震撼
+声名鹊起|名气增长快
+必不可少|必需
+初露锋芒|能力初显
+不可或缺|地位关键
+应运而生|顺应时代
+崭露头角|能力突出
+屡见不鲜|普遍常见
+大放异彩|表现出色
+脱颖而出|竞争中突出
+对症下药|方法精准、针对性
+审时度势|判断力、前瞻性
+见微知著|洞察力、预见性
+当机立断|果断、及时
+轻重缓急|主次与紧迫性的区分
+循序渐进|按步骤、有次序地推进
+融会贯通|融合贯通、系统理解
+举一反三|从个别推知一般
+触类旁通|掌握规律、贯通同类
+温故知新|复习中获新理解
+`;
+
+/* =========================================================
+   三、解析
+   ========================================================= */
+function parseRaw(raw){
+  const list = [];
+  raw.trim().split('\n').forEach((line, row) => {
+    if (!line.trim()) return;
+    const parts = line.split('|').map(s => s.trim());
+    for (let i = 0; i + 1 < parts.length; i += 2){
+      const w = parts[i], d = parts[i + 1];
+      if (w && d) list.push({ word: w, def: d, row, col: i / 2 });
+    }
+  });
+  const map = new Map();
+  list.forEach(o => { if (!map.has(o.word)) map.set(o.word, o); });
+  return [...map.values()];
+}
+
+function parseSides(raw){
+  const map = {};
+  let idx = 0;
+  raw.trim().split('\n').forEach(line => {
+    if (!line.trim()) return;
+    const parts = line.split('|').map(s => s.trim());
+    if (parts.length >= 2 && parts[0] && parts[1]){
+      map[parts[0]] = { side: parts[1], srow: idx++, scol: 0 };
+    }
+  });
+  return map;
+}
+
+const WORDS = parseRaw(RAW);
+const SIDE_MAP = parseSides(SIDES);
+
+/* 把侧重挂到词上 */
+WORDS.forEach(w => {
+  const s = SIDE_MAP[w.word];
+  w.side = s ? s.side : '';
+  w.srow = s ? s.srow : -1;
+  w.scol = s ? s.scol : 0;
+});
+
+/* 统计 */
+const HAS_SIDE = WORDS.filter(w => w.side);
+
+/* =========================================================
+   四、相似度
+   ========================================================= */
+const DF = {};
+WORDS.forEach(o => {
+  const set = new Set(
+    (o.def + o.word).replace(/[，。、；：""''（）()《》【】\s\-—…·!！?？]/g, '').split('')
+  );
+  set.forEach(c => DF[c] = (DF[c] || 0) + 1);
+});
+SIDES.trim().split('\n').forEach(line => {
+  const p = line.split('|');
+  if (p.length < 2) return;
+  const set = new Set(
+    (p[0] + p[1]).replace(/[，。、；：""''（）()《》【】\s\-—…·!！?？]/g, '').split('')
+  );
+  set.forEach(c => DF[c] = (DF[c] || 0) + 1);
+});
+
+function weight(c){ return 1 / Math.sqrt(DF[c] || 1); }
+
+function clean(s){
+  return s.replace(/[，。、；：""''（）()《》【】\s\-—…·!！?？]/g, '');
+}
+
+/* 文本相似度 */
+function simText(a, b){
+  const A = new Set(clean(a).split(''));
+  const B = new Set(clean(b).split(''));
+  let inter = 0, uni = 0;
+  const all = new Set([...A, ...B]);
+  all.forEach(c => {
+    const w = weight(c);
+    if (A.has(c) && B.has(c)) inter += w;
+    uni += w;
+  });
+  return uni ? inter / uni : 0;
+}
+
+/* 对象相似度（含位置） */
+function simObj(a, b, type){
+  const ta = type === 'def' ? (a.def + a.word) : (a.side + a.word);
+  const tb = type === 'def' ? (b.def + b.word) : (b.side + b.word);
+  return simText(ta, tb);
+}
+
+function posScore(a, b, type){
+  if (type === 'def'){
+    if (a.col !== b.col) return 0;
+    return 1 / (1 + Math.abs(a.row - b.row) * 0.4);
+  } else {
+    if (a.scol !== b.scol) return 0;
+    const d = Math.abs(a.srow - b.srow);
+    return 1 / (1 + d * 0.4);
+  }
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* =========================================================
+   五、选项生成
+   ========================================================= */
+function makeOptions(target, type){
+  const getText = o => type === 'def' ? o.def : o.side;
+  const targetText = getText(target);
+
+  const poolAll = WORDS.filter(o =>
+    o.word !== target.word && (type === 'def' || o.side)
+  );
+
+  const scored = poolAll.map(o => ({
+    o,
+    s: 0.5 * simObj(target, o, type) + 0.5 * posScore(target, o, type)
+  })).sort((x, y) => y.s - x.s);
+
+  let pool = scored.filter(x => simObj(target, x.o, type) < 0.82).slice(0, 14);
+  if (pool.length < 3) pool = scored.slice(0, 14);
+
+  const options = [{ text: targetText, correct: true }];
+  const seen = new Set([targetText]);
+
+  for (const item of shuffle(pool)){
+    if (options.length >= 4) break;
+    const t = getText(item.o);
+    if (seen.has(t)) continue;
+    seen.add(t);
+    options.push({ text: t, correct: false });
+  }
+  if (options.length < 4){
+    for (const item of scored){
+      if (options.length >= 4) break;
+      const t = getText(item.o);
+      if (seen.has(t)) continue;
+      seen.add(t);
+      options.push({ text: t, correct: false });
+    }
+  }
+  return shuffle(options);
+}
+
+/* =========================================================
+   六、分组
+   ========================================================= */
+const GROUP_SIZE = 50;
+const GROUPS = [];
+for (let i = 0; i < WORDS.length; i += GROUP_SIZE){
+  const end = Math.min(i + GROUP_SIZE, WORDS.length);
+  GROUPS.push({
+    name: `第 ${Math.floor(i / GROUP_SIZE) + 1} 组（${i + 1} ~ ${end} 词）`,
+    words: WORDS.slice(i, end)
+  });
+}
+
+const groupSelect = document.getElementById('groupSelect');
+GROUPS.forEach((g, i) => {
+  const opt = document.createElement('option');
+  opt.value = String(i);
+  opt.textContent = g.name;
+  groupSelect.appendChild(opt);
+});
+const allOpt = document.createElement('option');
+allOpt.value = '-1';
+allOpt.textContent = `全部词库（共 ${WORDS.length} 词）`;
+groupSelect.appendChild(allOpt);
+
+/* =========================================================
+   七、UI 逻辑
+   ========================================================= */
+const $ = id => document.getElementById(id);
+
+let QUESTIONS = [];
+let idx = 0, right = 0, wrong = 0;
+let locked = false, answered = false;
+let TOTAL = 10;
+let MODE = 'def';
+let currentGroupName = '';
+let currentModeName = '';
+
+/* --- 题量选择 --- */
+$('numRow').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#numRow .chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  TOTAL = parseInt(btn.dataset.n, 10);
+  checkWarn();
+});
+
+/* --- 模式选择 --- */
+$('modeRow').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#modeRow .chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  MODE = btn.dataset.mode;
+  checkWarn();
+});
+
+groupSelect.addEventListener('change', checkWarn);
+
+/* --- 提示：侧重模式下某组无侧重数据 --- */
+function checkWarn(){
+  const box = $('warnBox');
+  if (MODE === 'def'){ box.style.display = 'none'; return; }
+
+  const groupIdx = parseInt(groupSelect.value, 10);
+  let sideCount;
+  if (groupIdx === -1) sideCount = HAS_SIDE.length;
+  else sideCount = GROUPS[groupIdx].words.filter(w => w.side).length;
+
+  if (MODE === 'side' && sideCount === 0){
+    box.style.display = 'block';
+    box.textContent = '当前分组没有侧重数据，请换一组或改用“注释/混合”模式。';
+  } else if (MODE === 'mix' && sideCount === 0){
+    box.style.display = 'block';
+    box.textContent = '当前分组没有侧重数据，混合模式将全部按注释出题。';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+/* --- 按钮 --- */
+$('startBtn').onclick = () => startGame(TOTAL);
+$('againBtn').onclick = () => startGame(TOTAL);
+$('homeBtn').onclick = () => {
+  $('endPage').style.display = 'none';
+  $('startPage').style.display = 'block';
+};
+$('skipBtn').onclick = () => { if (!answered) nextQuestion(); };
+$('nextBtn').onclick = () => nextQuestion();
+
+/* --- 开始 --- */
+function startGame(n){
+  const groupIdx = parseInt(groupSelect.value, 10);
+  let source, groupName;
+
+  if (groupIdx === -1){
+    source = WORDS;
+    groupName = '全部词库';
+  } else {
+    source = GROUPS[groupIdx].words;
+    groupName = GROUPS[groupIdx].name;
+  }
+  currentGroupName = groupName;
+  currentModeName = MODE === 'def' ? '注释' : MODE === 'side' ? '侧重' : '混合';
+
+  /* 先按模式筛选可出题词条 */
+  let candidates;
+  if (MODE === 'def'){
+    candidates = source.map(w => ({ w, type: 'def' }));
+  } else if (MODE === 'side'){
+    candidates = source.filter(w => w.side).map(w => ({ w, type: 'side' }));
+  } else {
+    candidates = source.map(w => ({
+      w,
+      type: (w.side && Math.random() < 0.5) ? 'side' : 'def'
+    }));
+  }
+
+  if (candidates.length === 0){
+    $('warnBox').style.display = 'block';
+    $('warnBox').textContent = '当前分组在“侧重”模式下没有可出题的词，请换组或改用注释/混合模式。';
+    return;
+  }
+
+  const total = (n === 0) ? candidates.length : Math.min(n, candidates.length);
+  const picked = shuffle(candidates).slice(0, total);
+
+  QUESTIONS = picked.map(p => ({
+    word: p.w.word,
+    type: p.type,
+    options: makeOptions(p.w, p.type)
+  }));
+
+  idx = 0; right = 0; wrong = 0;
+  $('okNum').textContent = '0';
+  $('noNum').textContent = '0';
+
+  $('startPage').style.display = 'none';
+  $('endPage').style.display = 'none';
+  $('quizPage').style.display = 'flex';
+
+  renderQuestion();
+}
+
+/* --- 渲染 --- */
+function renderQuestion(){
+  const q = QUESTIONS[idx];
+  locked = false; answered = false;
+
+  const card = $('card');
+  card.classList.remove('pop');
+  void card.offsetWidth;
+  card.classList.add('pop');
+
+  /* 徽标：注释 / 侧重 */
+  const badge = $('badge');
+  if (q.type === 'def'){
+    badge.className = 'badge def';
+    badge.textContent = '注释';
+  } else {
+    badge.className = 'badge side';
+    badge.textContent = '侧重';
+  }
+
+  const wEl = $('word');
+  wEl.textContent = q.word;
+  const len = q.word.length;
+  wEl.style.fontSize =
+    len <= 2 ? '54px' :
+    len <= 3 ? '46px' :
+    len <= 4 ? '38px' :
+    len <= 5 ? '32px' : '26px';
+
+  $('counter').textContent = (idx + 1) + ' / ' + QUESTIONS.length;
+  $('bar').style.width = (idx / QUESTIONS.length * 100) + '%';
+
+  const tip = $('tip');
+  if (q.type === 'def'){
+    tip.textContent = '请选择正确的释义';
+    tip.style.color = '#0284c7';
+  } else {
+    tip.textContent = '请选择最贴近的侧重描述';
+    tip.style.color = '#b45309';
+  }
+
+  const box = $('options');
+  box.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="tag">' + letters[i] + '</span><span class="txt"></span>';
+    btn.querySelector('.txt').textContent = opt.text;
+    btn.onclick = () => choose(btn, opt);
+    box.appendChild(btn);
+  });
+
+  $('nextBtn').style.display = 'none';
+  $('skipBtn').style.display = 'block';
+}
+
+/* --- 选择 --- */
+function choose(btn, opt){
+  if (locked) return;
+  locked = true; answered = true;
+
+  const all = document.querySelectorAll('.opt');
+  all.forEach(b => b.classList.add('lock'));
+
+  const q = QUESTIONS[idx];
+  const correctText = q.options.find(o => o.correct).text;
+
+  if (opt.correct){
+    btn.classList.add('right');
+    right++;
+    $('okNum').textContent = right;
+    $('tip').textContent = '✓ 答对了';
+    $('tip').style.color = '#10b981';
+  } else {
+    btn.classList.add('wrong');
+    wrong++;
+    $('noNum').textContent = wrong;
+    $('tip').textContent = '✗ 答错了';
+    $('tip').style.color = '#ef4444';
+
+    all.forEach(b => {
+      if (b.querySelector('.txt').textContent === correctText){
+        b.classList.add('right');
+      } else if (b !== btn){
+        b.classList.add('dim');
+      }
+    });
+  }
+
+  $('skipBtn').style.display = 'none';
+  $('nextBtn').style.display = 'block';
+
+  setTimeout(() => { if (answered) nextQuestion(); }, 1400);
+}
+
+/* --- 下一题 --- */
+function nextQuestion(){
+  idx++;
+  if (idx >= QUESTIONS.length){
+    finish();
+  } else {
+    renderQuestion();
+  }
+}
+
+/* --- 结束 --- */
+function finish(){
+  $('bar').style.width = '100%';
+  $('quizPage').style.display = 'none';
+  $('endPage').style.display = 'block';
+
+  const done = right + wrong;
+  const rate = done ? Math.round(right / done * 100) : 0;
+
+  $('rate').innerHTML = rate + '<small>%</small>';
+  $('statLine').textContent =
+    '答对 ' + right + ' 题 · 答错 ' + wrong + ' 题 · 共 ' + QUESTIONS.length + ' 题';
+  $('groupLine').textContent =
+    '范围：' + currentGroupName + ' ｜ 内容：' + currentModeName;
+}
+</script>
+</body>
+</html>
